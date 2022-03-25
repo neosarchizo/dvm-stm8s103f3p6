@@ -8,6 +8,7 @@ SOURCES=stm8s_gpio.c
 SOURCES+= stm8s_clk.c
 SOURCES+= stm8s_flash.c
 SOURCES+= delay.c
+SOURCES+= stm8s_exti.c
 
 RELS=$(SOURCES:.c=.rel)
 
