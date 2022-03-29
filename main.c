@@ -2,9 +2,13 @@
 #include <stm8s_clk.h>
 #include <stm8s_gpio.h>
 #include <stm8s_uart1.h>
+#include <stm8s_flash.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <delay.h>
+
+#define EEPROM_BASE_ADDR 0x4000
+#define EEPROM_SIZE 640
 
 static void UART1_Config(void)
 {
@@ -28,6 +32,25 @@ int putchar(int c)
 	return c;
 }
 
+static void FLASH_Config(void)
+{
+	FLASH_SetProgrammingTime(FLASH_PROGRAMTIME_STANDARD);
+	FLASH_Unlock(FLASH_MEMTYPE_DATA);
+}
+
+void clear(void)
+{
+	printf("Reset EEPROM ... ");
+
+	for (uint16_t i = 0; i < EEPROM_SIZE; i++)
+	{
+		FLASH_EraseByte(EEPROM_BASE_ADDR +i);
+		FLASH_WaitForLastOperation(FLASH_MEMTYPE_DATA);
+	}
+
+	printf("Done\n");
+}
+
 int main()
 {
 	CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
@@ -35,14 +58,19 @@ int main()
 
 	UART1_Config();
 
-	printf("Hello world!\n");
+	FLASH_Config();
+	// clear();
+
+	// uint8_t a = 3;
+	uint8_t b = 0;
+
+	// FLASH_ProgramByte(EEPROM_BASE_ADDR, a);
+	// FLASH_WaitForLastOperation(FLASH_MEMTYPE_DATA);
+	b = FLASH_ReadByte(EEPROM_BASE_ADDR);
+
+	printf("b : %d\n", b);
 
 	while (1)
 	{
-		if (UART1_GetFlagStatus(UART1_FLAG_RXNE) == SET)
-		{
-			int c = UART1_ReceiveData8();
-			putchar(c);
-		}
 	}
 }
